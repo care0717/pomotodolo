@@ -1,17 +1,27 @@
-module Main exposing (Model, Msg(..), init, main, subscriptions, update, view)
+port module Main exposing (Model, Msg(..), init, main, subscriptions, update, view)
 
 import Browser
-import Html exposing (Html, div, h1, img, input, text)
-import Html.Attributes exposing (class, src, type_, value)
+import Html exposing (Html, div, i, p, section, text)
+import Html.Attributes exposing (class, type_)
 import Html.Events exposing (onClick)
+import Platform.Cmd exposing (Cmd)
 import Task
 import Time
+
+
+port notifyUser : () -> Cmd msg
+
+
+port notified : (Bool -> msg) -> Sub msg
 
 
 
 -- MODEL
 
-initTime = 250
+
+initTime =
+    10
+
 
 type alias Model =
     { zone : Time.Zone
@@ -36,6 +46,8 @@ type Msg
     | AdjustTimeZone Time.Zone
     | DoTimer
     | Reset
+    | Notification
+    | Notified Bool
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -49,10 +61,17 @@ update msg model =
 
                     else
                         model.timer
+
+                res =
+                    if c <= -1 then
+                        update Notification model
+
+                    else
+                        ( { model | timer = c }
+                        , Cmd.none
+                        )
             in
-            ( { model | timer = c }
-            , Cmd.none
-            )
+            res
 
         AdjustTimeZone newZone ->
             ( { model | zone = newZone }
@@ -61,7 +80,8 @@ update msg model =
 
         DoTimer ->
             let
-                r = not model.isStart
+                r =
+                    not model.isStart
             in
             ( { model | isStart = r }, Cmd.none )
 
@@ -70,6 +90,12 @@ update msg model =
             , Cmd.none
             )
 
+        Notification ->
+            ( model, notifyUser () )
+
+        Notified isNotified ->
+            update Reset model
+
 
 
 -- SUBSCRIPTIONS
@@ -77,7 +103,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every 1000 Tick
+    Sub.batch [ notified Notified, Time.every 1000 Tick ]
 
 
 
@@ -92,32 +118,25 @@ view model =
 
         bt =
             if model.isStart then
-                "Stop!"
+                "fas fa-stop"
 
             else
-                "Start"
-
-        btClass =
-            if model.isStart then
-                "bt stop-bt"
-
-            else
-                "bt"
+                "fas fa-play"
     in
-    div [ class "grid-container" ]
-        [ div [ class "start" ]
+    section [ class "section" ]
+        [ div [ class "container" ]
             [ div
-                [ class "area-overlap start-bt" ]
-                [ input [ type_ "button", value bt, onClick DoTimer, class btClass ] []
+                []
+                [ p [ class "title" ] [ text c ]
                 ]
-            ]
-        , div
-            [ class "counter" ]
-            [ h1 [] [ text c ]
-            ]
-        , div
-            [ class "reset" ]
-            [ input [ type_ "button", value "Reset", onClick Reset, class "bt reset-bt" ] []
+            , div
+                [ class "icon is-large button", type_ "button", onClick DoTimer ]
+                [ i [ class bt ] []
+                ]
+            , div
+                [ class "icon is-large button", type_ "button", onClick Reset ]
+                [ i [ class "fas fa-undo" ] []
+                ]
             ]
         ]
 
