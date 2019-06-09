@@ -1,11 +1,18 @@
-module Main exposing (Model, Msg(..), init, main, subscriptions, update, view)
+port module Main exposing (Model, Msg(..), init, main, subscriptions, update, view)
 
 import Browser
 import Html exposing (Html, div, h1, i, img, input, span, text)
 import Html.Attributes exposing (class, src, type_, value)
 import Html.Events exposing (onClick)
+import Platform.Cmd exposing (Cmd)
 import Task
 import Time
+
+
+port notifyUser : () -> Cmd msg
+
+
+port notified : (Bool -> msg) -> Sub msg
 
 
 
@@ -13,7 +20,7 @@ import Time
 
 
 initTime =
-    250
+    3
 
 
 type alias Model =
@@ -39,6 +46,8 @@ type Msg
     | AdjustTimeZone Time.Zone
     | DoTimer
     | Reset
+    | Notification
+    | Notified Bool
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -52,10 +61,17 @@ update msg model =
 
                     else
                         model.timer
+
+                res =
+                    if c <= -1 then
+                        update Notification model
+
+                    else
+                        ( { model | timer = c }
+                        , Cmd.none
+                        )
             in
-            ( { model | timer = c }
-            , Cmd.none
-            )
+            res
 
         AdjustTimeZone newZone ->
             ( { model | zone = newZone }
@@ -74,6 +90,12 @@ update msg model =
             , Cmd.none
             )
 
+        Notification ->
+            ( model, notifyUser () )
+
+        Notified isNotified ->
+            update Reset model
+
 
 
 -- SUBSCRIPTIONS
@@ -81,7 +103,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every 1000 Tick
+    Sub.batch [ notified Notified, Time.every 1000 Tick ]
 
 
 
