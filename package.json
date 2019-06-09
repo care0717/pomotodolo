@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "build": "webpack --mode development",
-    "start": "yarn build && electron .",
+    "start": "electron .",
+    "watch": "webpack --watch --mode development ",
     "test": "elm-test"
   },
   "devDependencies": {
