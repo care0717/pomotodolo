@@ -41,16 +41,23 @@ init _ =
 
 
 type Msg
-    = Tick Time.Posix
-    | DoTimer
-    | Reset
+    = DoTimer
+    | Tick Time.Posix
     | Notification
     | Notified Bool
+    | Reset
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        DoTimer ->
+            let
+                isStart =
+                    not model.isStart
+            in
+            ( { model | isStart = isStart }, Cmd.none )
+
         Tick _ ->
             let
                 c =
@@ -71,23 +78,16 @@ update msg model =
             in
             status
 
-        DoTimer ->
-            let
-                isStart =
-                    not model.isStart
-            in
-            ( { model | isStart = isStart }, Cmd.none )
-
-        Reset ->
-            ( { model | timer = initTime, isStart = False }
-            , Cmd.none
-            )
-
         Notification ->
             ( model, notifyUser () )
 
         Notified _ ->
             update Reset model
+
+        Reset ->
+            ( { model | timer = initTime, isStart = False }
+            , Cmd.none
+            )
 
 
 

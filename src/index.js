@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
         Notification.requestPermission();
     }
 });
-function notifyUser() {
+function notify() {
     if (Notification.permission !== "granted")
         Notification.requestPermission();
     else {
@@ -25,9 +25,9 @@ function notifyUser() {
         });
         notification.onclose = () => {}
     }
-    app.ports.notified.send(true)
 }
 
 app.ports.notifyUser.subscribe(_ => {
-    notifyUser()
+    notify()
+    app.ports.notified.send(true)
 });
