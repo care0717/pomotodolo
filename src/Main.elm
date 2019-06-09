@@ -20,20 +20,19 @@ port notified : (Bool -> msg) -> Sub msg
 
 
 initTime =
-    10
+    3
 
 
 type alias Model =
-    { zone : Time.Zone
-    , timer : Int
+    { timer : Int
     , isStart : Bool
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model Time.utc initTime False
-    , Task.perform AdjustTimeZone Time.here
+    ( Model initTime False
+    , Cmd.none
     )
 
 
@@ -43,7 +42,6 @@ init _ =
 
 type Msg
     = Tick Time.Posix
-    | AdjustTimeZone Time.Zone
     | DoTimer
     | Reset
     | Notification
@@ -53,7 +51,7 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Tick newTime ->
+        Tick _ ->
             let
                 c =
                     if model.isStart then
@@ -62,8 +60,8 @@ update msg model =
                     else
                         model.timer
 
-                res =
-                    if c <= -1 then
+                status =
+                    if c < 0 then
                         update Notification model
 
                     else
@@ -71,19 +69,14 @@ update msg model =
                         , Cmd.none
                         )
             in
-            res
-
-        AdjustTimeZone newZone ->
-            ( { model | zone = newZone }
-            , Cmd.none
-            )
+            status
 
         DoTimer ->
             let
-                r =
+                isStart =
                     not model.isStart
             in
-            ( { model | isStart = r }, Cmd.none )
+            ( { model | isStart = isStart }, Cmd.none )
 
         Reset ->
             ( { model | timer = initTime, isStart = False }
@@ -93,7 +86,7 @@ update msg model =
         Notification ->
             ( model, notifyUser () )
 
-        Notified isNotified ->
+        Notified _ ->
             update Reset model
 
 
@@ -102,7 +95,7 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.batch [ notified Notified, Time.every 1000 Tick ]
 
 
