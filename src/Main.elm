@@ -1,7 +1,7 @@
 module Main exposing (Model, Msg(..), init, main, subscriptions, update, view)
 
 import Browser
-import Html exposing (Html, div, h1, img, input, text)
+import Html exposing (Html, div, h1, i, img, input, span, text)
 import Html.Attributes exposing (class, src, type_, value)
 import Html.Events exposing (onClick)
 import Task
@@ -11,7 +11,10 @@ import Time
 
 -- MODEL
 
-initTime = 250
+
+initTime =
+    250
+
 
 type alias Model =
     { zone : Time.Zone
@@ -61,7 +64,8 @@ update msg model =
 
         DoTimer ->
             let
-                r = not model.isStart
+                r =
+                    not model.isStart
             in
             ( { model | isStart = r }, Cmd.none )
 
@@ -92,32 +96,23 @@ view model =
 
         bt =
             if model.isStart then
-                "Stop!"
+                "fas fa-stop"
 
             else
-                "Start"
-
-        btClass =
-            if model.isStart then
-                "bt stop-bt"
-
-            else
-                "bt"
+                "fas fa-play"
     in
-    div [ class "grid-container" ]
-        [ div [ class "start" ]
-            [ div
-                [ class "area-overlap start-bt" ]
-                [ input [ type_ "button", value bt, onClick DoTimer, class btClass ] []
-                ]
-            ]
-        , div
-            [ class "counter" ]
+    div []
+        [ div
+            []
             [ h1 [] [ text c ]
             ]
         , div
-            [ class "reset" ]
-            [ input [ type_ "button", value "Reset", onClick Reset, class "bt reset-bt" ] []
+            [ class "icon", type_ "button", onClick DoTimer ]
+            [ i [ class bt ] []
+            ]
+        , div
+            [ class "icon", type_ "button", onClick Reset ]
+            [ i [ class "fas fa-undo" ] []
             ]
         ]
 
