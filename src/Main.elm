@@ -1,8 +1,8 @@
 port module Main exposing (Model, Msg(..), init, main, subscriptions, update, view)
 
 import Browser
-import Html exposing (Html, div, h1, i, img, input, span, text)
-import Html.Attributes exposing (class, src, type_, value)
+import Html exposing (Html, div, i, p, section, text)
+import Html.Attributes exposing (class, type_)
 import Html.Events exposing (onClick)
 import Platform.Cmd exposing (Cmd)
 import Task
@@ -20,7 +20,7 @@ port notified : (Bool -> msg) -> Sub msg
 
 
 initTime =
-    3
+    10
 
 
 type alias Model =
@@ -123,18 +123,20 @@ view model =
             else
                 "fas fa-play"
     in
-    div []
-        [ div
-            []
-            [ h1 [] [ text c ]
-            ]
-        , div
-            [ class "icon", type_ "button", onClick DoTimer ]
-            [ i [ class bt ] []
-            ]
-        , div
-            [ class "icon", type_ "button", onClick Reset ]
-            [ i [ class "fas fa-undo" ] []
+    section [ class "section" ]
+        [ div [ class "container" ]
+            [ div
+                []
+                [ p [ class "title" ] [ text c ]
+                ]
+            , div
+                [ class "icon is-large button", type_ "button", onClick DoTimer ]
+                [ i [ class bt ] []
+                ]
+            , div
+                [ class "icon is-large button", type_ "button", onClick Reset ]
+                [ i [ class "fas fa-undo" ] []
+                ]
             ]
         ]
 
